@@ -50,12 +50,15 @@ public class RegistroService {
         AtomicBoolean allSuccess = new AtomicBoolean(true);
 
         for (int i = 0; i < apiProperties.getBaseUrls().size(); i++) {
-            if (i == origen) continue; // saltar API origen
+            if (i == origen) {
+                logger.info("Saltando API origen en índice {}.", i);
+                continue; // saltar API origen
+            }
 
             String baseUrl = apiProperties.getBaseUrls().get(i);
             String endpoint = apiEndpoints.getEndpoints().get(i);
             String url = baseUrl + endpoint;
-
+            logger.info("Intentando registrar usuario en URL [{}] (índice {}).", url, i);
             try {
                 if (endpoint.toLowerCase().contains("graphql")) {
                     // Construir cuerpo GraphQL
@@ -75,6 +78,7 @@ public class RegistroService {
                             .bodyValue(body)
                             .retrieve()
                             .onStatus(status -> status.isError(), response -> {
+                                logger.error("Error en respuesta HTTP de GraphQL en URL [{}], status: {}", url, response.statusCode());
                                 allSuccess.set(false);
                                 return response.createException();
                             })
@@ -89,18 +93,20 @@ public class RegistroService {
                             .bodyValue(user)
                             .retrieve()
                             .onStatus(status -> status.isError(), response -> {
+                                logger.error("Error en respuesta HTTP REST en URL [{}], status: {}", url, response.statusCode());
                                 allSuccess.set(false);
                                 return response.createException();
                             })
                             .bodyToMono(String.class)
                             .block();
                 }
+                logger.info("Registro exitoso en URL [{}]", url);
             } catch (WebClientResponseException ex) {
                 allSuccess.set(false);
-                // opcional: log ex.getResponseBodyAsString() para debugging
+                logger.error("Fallo en la llamada WebClientResponseException para URL [{}]: Status {}, Body: {}", url, ex.getStatusCode(), ex.getResponseBodyAsString());
             } catch (Exception e) {
                 allSuccess.set(false);
-                // opcional: log error general
+                logger.error("Error inesperado en la llamada a URL [{}]: {}", url, e.getMessage(), e);
             }
         }
 

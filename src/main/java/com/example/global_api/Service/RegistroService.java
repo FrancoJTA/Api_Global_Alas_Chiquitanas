@@ -67,7 +67,7 @@ public class RegistroService {
 
                     Map<String, Object> variables = new HashMap<>();
                     variables.put("input", userToMap(user));
-
+                    logger.info(variables.toString());
                     Map<String, Object> body = new HashMap<>();
                     body.put("query", mutation);
                     body.put("variables", variables);

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +63,8 @@ public class RegistroService {
             try {
                 if (endpoint.toLowerCase().contains("graphql")) {
                     // Construir cuerpo GraphQL
-                    String mutation = "mutation Mutation($input: inputUsuarioGlobal) {" +
-                            " nuevoUsuarioGlobal(input: $input) { id } }";
+                        String mutation = "mutation Mutation($input: inputUsuarioGlobal) {" +
+                                " nuevoUsuarioGlobal(input: $input) { id } }";
 
                     Map<String, Object> variables = new HashMap<>();
                     variables.put("input", userToMap(user));
@@ -73,7 +74,7 @@ public class RegistroService {
                     body.put("variables", variables);
 
                     webClient.post()
-                            .uri(url)
+                            .uri(URI.create(url))
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(body)
                             .retrieve()
@@ -88,7 +89,7 @@ public class RegistroService {
                 } else {
                     // REST POST con User directamente
                     webClient.post()
-                            .uri(url)
+                            .uri(URI.create(url))
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(user)
                             .retrieve()

@@ -38,6 +38,8 @@ public class RegistroService {
 
     @PostConstruct
     public void printUrls() {
+
+
         logger.info("URLs completas (base URL + endpoint) cargadas desde properties:");
         List<String> baseUrls = apiProperties.getBaseUrls();
         List<String> endpoints = apiEndpoints.getEndpoints();
@@ -47,23 +49,22 @@ public class RegistroService {
             logger.info(fullUrl);
         }
     }
+
+
     public boolean registroUsuario(User user, int origen) {
         AtomicBoolean allSuccess = new AtomicBoolean(true);
-
         for (int i = 0; i < apiProperties.getBaseUrls().size(); i++) {
             if (i == origen) {
                 logger.info("Saltando API origen en índice {}.", i);
-                continue; // saltar API origen
+                continue;
             }
-
             String baseUrl = apiProperties.getBaseUrls().get(i);
             String endpoint = apiEndpoints.getEndpoints().get(i);
             String url = baseUrl + endpoint;
             logger.info("Intentando registrar usuario en URL [{}] (índice {}).", url, i);
             try {
                 if (endpoint.toLowerCase().contains("graphql")) {
-                    // Construir cuerpo GraphQL
-                        String mutation = "mutation Mutation($input: inputUsuarioGlobal) {" +
+                    String mutation = "mutation Mutation($input: inputUsuarioGlobal) {" +
                                 " nuevoUsuarioGlobal(input: $input) { id } }";
 
                     Map<String, Object> variables = new HashMap<>();
@@ -74,7 +75,7 @@ public class RegistroService {
                     body.put("variables", variables);
 
                     webClient.post()
-                            .uri(URI.create(url))
+                            .uri(url)
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(body)
                             .retrieve()
@@ -87,14 +88,13 @@ public class RegistroService {
                             .block();
 
                 } else {
-                    // REST POST con User directamente
                     webClient.post()
-                            .uri(URI.create(url))
+                            .uri(url)
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(user)
                             .retrieve()
                             .onStatus(status -> status.isError(), response -> {
-                                logger.error("Error en respuesta HTTP REST en URL [{}], status: {}", url, response.statusCode());
+                                logger.error("Error en respuesta HTTP REST en URL [{}]", url);
                                 allSuccess.set(false);
                                 return response.createException();
                             })
@@ -114,7 +114,6 @@ public class RegistroService {
         return allSuccess.get();
     }
 
-    // Convierte User a Map<String,Object> para GraphQL variables
     private Map<String, Object> userToMap(User user) {
         Map<String, Object> map = new HashMap<>();
         map.put("nombre", user.nombre);

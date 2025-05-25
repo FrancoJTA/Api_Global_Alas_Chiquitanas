@@ -121,7 +121,6 @@ public class RegistroService {
         map.put("email", user.email);
         map.put("telefono", user.telefono);
         map.put("ci", user.ci);
-        map.put("password", user.password);
         return map;
     }
 }

@@ -6,5 +6,4 @@ public class User {
     public String email;
     public String telefono;
     public String ci;
-    public String password;
 }

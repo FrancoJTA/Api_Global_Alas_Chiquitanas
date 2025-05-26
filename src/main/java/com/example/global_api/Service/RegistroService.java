@@ -64,7 +64,7 @@ public class RegistroService {
             logger.info("Intentando registrar usuario en URL [{}] (índice {}).", url, i);
             try {
                 if (endpoint.toLowerCase().contains("graphql")) {
-                    String mutation = "mutation Mutation($input: inputUsuarioGlobal) {" +
+                    String mutation = "mutation Mutation($input: inputUsuarioGlobal!) {" +
                                 " nuevoUsuarioGlobal(input: $input) { id } }";
 
                     Map<String, Object> variables = new HashMap<>();
